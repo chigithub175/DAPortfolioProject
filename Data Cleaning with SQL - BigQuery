@@ -1,0 +1,68 @@
+--Populate Property Address data
+UPDATE a
+SET PropertyAddress =  COALESCE(a.PropertyAddress,b.PropertyAddress)
+FROM
+  loyal-glass-371423-438109.NashvilleHouse.Nashville_house AS a
+  JOIN loyal-glass-371423-438109.NashvilleHouse.Nashville_house AS b
+  ON
+    a.ParcelID = b.ParcelID
+    AND a.UniqueID <> b.UniqueID
+WHERE  a.PropertyAddress IS NULL
+
+
+--Breaking out Address into Individual Columns (Adress, City, State)
+--Property Address
+ALTER TABLE `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+ADD COLUMN 
+  PropertySplitAddress STRING,
+  PropertySplitCity STRING
+
+UPDATE loyal-glass-371423-438109.NashvilleHouse.Nashville_house
+SET
+  PropertySplitAddress = SPLIT(PropertyAddress,',')[SAFE_OFFSET(0)] ,
+  PropertySplitCity = SPLIT(PropertyAddress,',')[SAFE_OFFSET(1)]
+
+--Owner Address
+ALTER TABLE `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+ADD COLUMN 
+  OwnerSplitAddress STRING,
+  OwnerSplitCity STRING,
+  OwnerSplitState STRING
+
+UPDATE `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+SET
+  OwnerSplitAddress = SPLIT(OwnerAddress, ',')[SAFE_OFFSET(0)],
+  OwnerSplitCity = SPLIT(OwnerAddress, ',')[SAFE_OFFSET(1)],
+  OwnerSplitState = SPLIT(OwnerAddress, ',')[SAFE_OFFSET(2)]
+
+
+--Change true and false to Yes and No in "Sold as Vacant" field
+--check
+SELECT 
+  SoldAsVacant
+FROM `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+GROUP BY 
+  SoldAsVacant
+
+--Try using CASE to change the value
+SELECT 
+  SoldAsVacant,
+  CASE 
+    WHEN SoldAsVacant = TRUE THEN 'Yes'
+    WHEN SoldAsVacant = FALSE THEN 'No'
+    ELSE CAST(SoldAsVacant AS STRING)  -- Ép kiểu về STRING
+  END AS SoldAsVacant_Formatted
+FROM `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`;
+
+--Update the table
+ALTER TABLE `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+ADD COLUMN SoldAsVacant_Formatted STRING
+
+UPDATE `loyal-glass-371423-438109.NashvilleHouse.Nashville_house`
+SET SoldAsVacant_Formatted = CASE 
+    WHEN SoldAsVacant = TRUE THEN 'Yes'
+    WHEN SoldAsVacant = FALSE THEN 'No'
+    ELSE CAST(SoldAsVacant AS STRING)   
+  END
+
+
