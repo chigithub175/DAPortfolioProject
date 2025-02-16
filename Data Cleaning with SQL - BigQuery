@@ -1,4 +1,20 @@
 --Populate Property Address data
+--check
+SELECT 
+  a.ParcelID,
+  a.PropertyAddress,
+  b.PropertyAddress,
+  b.ParcelID,
+  COALESCE(a.PropertyAddress,b.PropertyAddress)
+FROM
+  loyal-glass-371423-438109.NashvilleHouse.Nashville_house AS a
+  JOIN loyal-glass-371423-438109.NashvilleHouse.Nashville_house AS b
+  ON
+    a.ParcelID = b.ParcelID
+    AND a.UniqueID <> b.UniqueID
+WHERE  a.PropertyAddress IS NULL
+
+--update table
 UPDATE a
 SET PropertyAddress =  COALESCE(a.PropertyAddress,b.PropertyAddress)
 FROM
