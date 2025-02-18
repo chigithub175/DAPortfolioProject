@@ -82,3 +82,53 @@ SET SoldAsVacant_Formatted = CASE
   END
 
 
+--Remove Duplicate
+--check
+SELECT *
+FROM 
+  loyal-glass-371423-438109.NashvilleHouse.Nashville_house
+
+--Find the duplicates
+SELECT *
+FROM
+(
+SELECT
+*,
+ROW_NUMBER() OVER(
+  PARTITION BY 
+    ParcelID,
+    PropertyAddress,
+    SalePrice,
+    SaleDate,
+    LegalReference
+    ORDER BY 
+      UniqueID
+) AS row_num
+FROM 
+  loyal-glass-371423-438109.NashvilleHouse.Nashville_house
+)
+WHERE row_num >1
+ORDER BY PropertyAddress
+
+--Create new table without the duplicates (not recommend but i don't know anything esle at this moment)
+CREATE OR REPLACE TABLE loyal-glass-371423-438109.NashvilleHouse.Nashville_house
+AS
+SELECT *
+FROM
+(
+SELECT
+*,
+ROW_NUMBER() OVER(
+  PARTITION BY 
+    ParcelID,
+    PropertyAddress,
+    SalePrice,
+    SaleDate,
+    LegalReference
+    ORDER BY 
+      UniqueID
+) AS row_num
+FROM 
+  loyal-glass-371423-438109.NashvilleHouse.Nashville_house
+)
+WHERE row_num =1
